@@ -2,7 +2,7 @@ module CASClient
   # Represents a CAS service ticket.
   class ServiceTicket
     attr_reader :ticket, :service, :renew
-    attr_accessor :response
+    attr_accessor :response, :reused
     
     def initialize(ticket, service, renew = false)
       @ticket = ticket
@@ -11,11 +11,21 @@ module CASClient
     end
     
     def is_valid?
+      return true if @reused
       response.is_success?
     end
     
     def has_been_validated?
+      return true if @reused
       not response.nil?
+    end
+
+    def as_json(options=nil)
+      {
+        :ticket  => @ticket,
+        :service => @service,
+        :renew   => @renew
+      }
     end
   end
   

@@ -201,7 +201,7 @@ module CASClient
     private
     # Fetches a CAS response of the given type from the given URI.
     # Type should be either ValidationResponse or ProxyResponse.
-    def request_cas_response(uri, type)
+    def self.request_cas_response(log, uri)
       log.debug "Requesting CAS response for URI #{uri}"
 
       uri = URI.parse(uri) unless uri.kind_of? URI
@@ -226,14 +226,18 @@ module CASClient
         raise "The CAS authentication server at #{uri} responded with an error (#{raw_res.inspect})!"
       end
 
-      type.new(raw_res.body)
+      raw_res.body
+    end
+
+    def request_cas_response(uri, type)
+      type.new(Client.request_cas_response(log, uri))
     end
 
     # Submits some data to the given URI and returns a Net::HTTPResponse.
     def submit_data_to_cas(uri, data)
       uri = URI.parse(uri) unless uri.kind_of? URI
       req = Net::HTTP::Post.new(uri.path)
-      req.set_form_data(data, ';')
+      req.set_form_data(data)
       build_https(uri).start {|conn| conn.request(req) }
     end
 
@@ -250,7 +254,7 @@ module CASClient
       pairs.join("&")
     end
 
-    def build_https(uri)
+    def self.build_https(uri)
       https = Net::HTTP.new(uri.host, uri.port)
       https.use_ssl = (uri.scheme == 'https')
       if https.use_ssl? and @ssl_verify_mode
@@ -259,5 +263,8 @@ module CASClient
       https
     end
 
+    def build_https(uri)
+      Client.build_https(uri)
+    end
   end
 end
