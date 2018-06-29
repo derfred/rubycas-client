@@ -145,7 +145,7 @@ module CASClient
     def request_login_ticket
       uri = URI.parse(login_url+'Ticket')
       https = build_https(uri)
-      res = https.post(uri.path, ';')
+      res = https.post(uri.path, '&')
 
       raise CASException, res.body unless res.kind_of? Net::HTTPSuccess
 
@@ -237,7 +237,7 @@ module CASClient
     def submit_data_to_cas(uri, data)
       uri = URI.parse(uri) unless uri.kind_of? URI
       req = Net::HTTP::Post.new(uri.path)
-      req.set_form_data(data, ';')
+      req.set_form_data(data, '&')
       build_https(uri).start {|conn| conn.request(req) }
     end
 
